@@ -1,5 +1,4 @@
-ARG PYTHON_VERSION
-FROM python:${PYTHON_VERSION}-slim-bookworm
+FROM python:3.12.3-slim-bookworm
 
 RUN apt update && \
     apt install -y curl && \
@@ -17,11 +16,10 @@ ENV PATH ${RYE_HOME}/shims:${PATH}
 
 RUN curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
 
-# kaniko 用
-# kaniko は RUN --mount をサポートしていない
-# https://github.com/GoogleContainerTools/kaniko/issues/1568
-# COPY ./pyproject.toml ./requirements*.lock ./.python-version ./README.md ./
-# RUN rye sync --no-dev --no-lock
+
+RUN mkdir -p /root/src
+COPY . /root/src
+WORKDIR /root/src
 
 RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=requirements.lock,target=requirements.lock \
@@ -30,10 +28,9 @@ RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=README.md,target=README.md \
     rye sync --no-dev --no-lock
 
+EXPOSE 8080
+
 RUN . .venv/bin/activate
 
-COPY . .
-
-EXPOSE 8080
 
 ENTRYPOINT ["python3", "./src/main.py"]
