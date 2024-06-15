@@ -41,11 +41,15 @@ async def on_ready():
 
 @client.tree.command()
 async def mc_start(interaction: discord.Interaction):
-    response = ec2.start_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
-    instance_running = False
     await interaction.response.defer()
+    
+    ec2.start_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
+    
+    instance_running = False
     while not instance_running:
-        state = response["Reservations"][0]["Instances"][0]["State"]["Name"]
+        instance = ec2.describe_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
+        state = instance["Reservations"][0]["Instances"][0]["State"]["Name"]
+        print(state)
         if state == "running":
             instance_running = True
 
@@ -60,10 +64,13 @@ async def mc_start(interaction: discord.Interaction):
 @client.tree.command()
 async def mc_stop(interaction: discord.Interaction):
     await interaction.response.defer()
-    response = ec2.stop_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
+
+    ec2.stop_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
+
     instance_stopped = False
     while not instance_stopped:
-        state = response["Reservations"][0]["Instances"][0]["State"]["Name"]
+        instance = ec2.describe_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
+        state = instance["Reservations"][0]["Instances"][0]["State"]["Name"]
         print(state)
         if state == "stopping":
             instance_stopped = True
@@ -83,7 +90,6 @@ async def mc_ip(interaction: discord.Interaction):
     await interaction.response.defer()
     instance = ec2.describe_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
     if instance["Reservations"][0]["Instances"][0]["State"]["Name"] != "running":
-        await interaction.response.send_message("Instance is not running")
         await interaction.followup.send("Instance is not running", ephemeral=True)
         return
 

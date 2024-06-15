@@ -16,10 +16,7 @@ ENV PATH ${RYE_HOME}/shims:${PATH}
 
 RUN curl -sSf https://rye.astral.sh/get | RYE_NO_AUTO_INSTALL=1 RYE_INSTALL_OPTION="--yes" bash
 
-
-RUN mkdir -p /root/src
-COPY . /root/src
-WORKDIR /root/src
+COPY . .
 
 RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=requirements.lock,target=requirements.lock \
