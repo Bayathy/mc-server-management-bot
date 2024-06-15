@@ -20,10 +20,8 @@ boto3==1.34.126
 botocore==1.34.126
     # via boto3
     # via s3transfer
-discord==2.3.2
-    # via aws-discord
 discord-py==2.3.2
-    # via discord
+    # via aws-discord
 frozenlist==1.4.1
     # via aiohttp
     # via aiosignal
