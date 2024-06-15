@@ -29,5 +29,4 @@ EXPOSE 8080
 
 RUN . .venv/bin/activate
 
-
-ENTRYPOINT ["python3", "./src/main.py"]
+CMD ["python3", "./src/main.py"]
