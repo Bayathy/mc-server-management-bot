@@ -33,6 +33,7 @@ class ManagementBot(discord.Client):
 intents = discord.Intents.default()
 client = ManagementBot(intents=intents)
 
+
 @client.event
 async def on_ready():
     print(f"Bot is ready as {client.user}")
@@ -42,7 +43,6 @@ async def on_ready():
 async def mc_start(interaction: discord.Interaction):
     response = ec2.start_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
     instance_running = False
-    await interaction.response.send_message("Starting instance now...")
     await interaction.response.defer()
     while not instance_running:
         state = response["Reservations"][0]["Instances"][0]["State"]["Name"]
@@ -52,11 +52,14 @@ async def mc_start(interaction: discord.Interaction):
     instance = ec2.describe_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
     ip = instance["Reservations"][0]["Instances"][0]["PublicIpAddress"]
 
-    await interaction.response.send_message(f"Instance is now running\nIP: {ip}")
+    await interaction.followup.send(
+        f"Instance is now running\nIP: {ip}", ephemeral=True
+    )
 
 
 @client.tree.command()
 async def mc_stop(interaction: discord.Interaction):
+    await interaction.response.defer()
     response = ec2.stop_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
     instance_stopped = False
     while not instance_stopped:
@@ -64,25 +67,28 @@ async def mc_stop(interaction: discord.Interaction):
         print(state)
         if state == "stopping":
             instance_stopped = True
-            await interaction.response.send_message("Instance is now stopped")
+            await interaction.followup.send("Instance is now stopped", ephemeral=True)
 
 
 @client.tree.command()
 async def mc_status(interaction: discord.Interaction):
+    await interaction.response.defer()
     instance = ec2.describe_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
     state = instance["Reservations"][0]["Instances"][0]["State"]["Name"]
-    await interaction.response.send_message(f"Instance is {state}")
+    await interaction.followup.send(f"Instance is {state}", ephemeral=True)
 
 
 @client.tree.command()
 async def mc_ip(interaction: discord.Interaction):
+    await interaction.response.defer()
     instance = ec2.describe_instances(InstanceIds=[os.getenv("INSTANCE_ID")])
     if instance["Reservations"][0]["Instances"][0]["State"]["Name"] != "running":
         await interaction.response.send_message("Instance is not running")
+        await interaction.followup.send("Instance is not running", ephemeral=True)
         return
-    
+
     ip = instance["Reservations"][0]["Instances"][0]["PublicIpAddress"]
-    await interaction.response.send_message(f"Instance IP: {ip}")
+    await interaction.followup.send(f"Instance IP: {ip}", ephemeral=True)
 
 
 client.run(os.getenv("TOKEN"))
