@@ -3,6 +3,8 @@ import discord
 from discord import app_commands
 import boto3
 
+from server import server_thread
+
 load_dotenv()
 
 import os
@@ -96,5 +98,6 @@ async def mc_ip(interaction: discord.Interaction):
     ip = instance["Reservations"][0]["Instances"][0]["PublicIpAddress"]
     await interaction.followup.send(f"Instance IP: {ip}", ephemeral=True)
 
+server_thread()
 
 client.run(os.getenv("TOKEN"))
